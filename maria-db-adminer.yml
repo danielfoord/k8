@@ -1,31 +1,42 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
-  name: maria-db-deployment
-  labels:
-    app: mariadb
+  name: maria-db-statefulset
 spec:
-  replicas: 1
   selector:
     matchLabels:
-      app: mariadb
+      app: mariadb # has to match .spec.template.metadata.labels
+  serviceName: mariadb-service
+  replicas: 1 # by default is 1
   template:
     metadata:
       labels:
-        app: mariadb
+        app: mariadb # has to match .spec.selector.matchLabels
     spec:
+      terminationGracePeriodSeconds: 10
       containers:
       - name: mariadb
         image: mariadb
         resources:
           limits:
-            cpu: "100m"
-            memory: "500Mi"
+            cpu: 100m
+            memory: 200Mi
         ports:
         - containerPort: 3306
+          name: mariadb
         env:
         - name: MARIADB_ROOT_PASSWORD
-          value: secret
+          valueFrom:
+            secretKeyRef:
+              name: mariadb-secret
+              key: mariadb-root-password
+        volumeMounts:
+          - name: mariadb-volume
+            mountPath: /var/lib/mysql
+      volumes:
+      - name: mariadb-volume
+        persistentVolumeClaim:
+          claimName: mariadb-pvc
 ---
 
 apiVersion: v1

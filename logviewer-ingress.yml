@@ -1,0 +1,21 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  namespace: kube-system
+  name: logviwer-ingress
+spec:
+  # tls:
+  # - hosts:
+  #   - dashboard.com
+  #   secretName: dashboard-secret-tls
+  rules:
+  - host: logviewer-k8.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: logviewer
+            port:
+              number: 3000
